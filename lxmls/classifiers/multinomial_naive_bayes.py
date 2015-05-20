@@ -36,7 +36,38 @@ class MultinomialNaiveBayes(lc.LinearClassifier):
             # prior[0] is the prior probability of a document being of class 0
             # likelihood[4, 0] is the likelihood of the fifth(*) feature being active, given that the document is of class 0
             # (*) recall that Python starts indices at 0, so an index of 4 corresponds to the fifth feature!
-        
+
+        # PRIOR
+        for y_i in y:
+            prior[y_i[0]] += 1
+        #for cl in classes:
+        #prior[cl] /= float(y.shape[0])
+        prior /= float(y.shape[0])
+
+        # LIKELIHOOD
+        feat_counts = np.sum(x, axis=0)
+        feat_counts += n_words
+        #for x_i, y_i in zip(x, y):
+        #    for j, w in enumerate(x_i):
+        #        likelihood[j, y_i[0]] += w
+        #for cl in classes:
+        #    likelihood[:,cl] += 1 # SMOOTHING
+        #    likelihood[:,cl] /= feat_counts
+
+        # SOLUTION
+        for i in xrange(n_classes):
+            docs_in_class,_ = np.nonzero(y == classes[i]) # docs_in_class = indices of documents in class i
+            prior[i] = 1.0*len(docs_in_class)/n_docs # prior = fraction of documents with this class
+            word_count_in_class = x[docs_in_class,:].sum(0) # word_count_in_class = count of word occurrences in documents of class i
+            total_words_in_class = word_count_in_class.sum() # total_words_in_class = total number of words in documents of class i
+            if self.smooth == False:
+                likelihood[:,i] = word_count_in_class/total_words_in_class # likelihood = count of occurrences of a word in a class
+            else:
+                likelihood[:,i] = (word_count_in_class + self.smooth_param) / (total_words_in_class + self.smooth_param*n_words)
+
+
+
+
         params = np.zeros((n_words+1,n_classes))
         for i in xrange(n_classes):
             params[0,i] = np.log(prior[i])

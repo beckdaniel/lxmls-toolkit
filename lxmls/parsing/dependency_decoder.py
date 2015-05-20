@@ -51,7 +51,37 @@ class DependencyDecoder():
         Parse using Eisner's algorithm.
         '''
         ## Exercise 4.3.6
-        pass
+        length = scores.shape[0] - 1
+        incomplete = np.zeros((length+1, length+1, 2))
+        complete = np.zeros((length+1, length+1, 2))
+        incomplete_bt = -np.ones((length+1, length+1, 2), dtype=np.int)
+        complete_bt = -np.ones((length+1, length+1, 2), dtype=np.int)
+
+        for k in xrange(1, length+1):
+            for s in xrange(length+1-k):
+                t = s + k
+
+                inc_values = complete[s,s:t,1] + complete[s+1:t+1,t,0]
+                if s == 0:
+                    incomplete[s,t,0] = -np.inf
+                else:
+                    incomplete[s,t,0] = np.max(inc_values + scores[t,s])
+                    incomplete_bt[s,t,0] = s + np.argmax(inc_values + scores[t,s])
+                incomplete[s,t,1] = np.max(inc_values + scores[s,t])
+                incomplete_bt[s,t,1] = s + np.argmax(inc_values + scores[s,t])
+
+                c_left_values = complete[s,s:t,0] + incomplete[s:t,t,0]
+                complete[s,t,0] = np.max(c_left_values)
+                complete_bt[s,t,0] = s + np.argmax(c_left_values)
+
+                c_right_values = incomplete[s,s+1:t+1,0] + complete[s+1:t+1,t,0]
+                complete[s,t,1] = np.max(c_right_values)
+                complete_bt[s,t,1] = s+1 + np.argmax(c_right_values)
+
+
+        heads = -np.ones(length+1, dtype=int)
+        self.backtrack_eisner(incomplete_bt, complete_bt, 0, length, 1, 1, heads)
+        return heads
 
     def backtrack_eisner(self, incomplete_backtrack, complete_backtrack, s, t, direction, complete, heads):
         '''

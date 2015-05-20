@@ -4,14 +4,15 @@ def next_x(x):
     x += np.random.normal(scale=.0625)
     if x < 0:
         return 0.
-    return xnext
+    return x
 
 def walk():
     iters = 0
+    x = 0
     while x <= 1.:
         x = next_x(x)
         iters += 1
-    return nr_iters
+    return iters
 
 walks = np.array([walk() for i in xrange(1000)])
 

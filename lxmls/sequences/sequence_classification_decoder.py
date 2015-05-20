@@ -84,7 +84,35 @@ class SequenceClassificationDecoder():
     ######
     def run_viterbi(self, initial_scores, transition_scores, final_scores, emission_scores):
         ## To implement on exercise 2.8
-        pass
+        length = np.size(emission_scores, 0) # Length of the sequence.
+        num_states = np.size(initial_scores) # Number of states.
+
+        # Viterbi and backtrack variables.
+        viterbi = np.zeros([length, num_states]) + logzero()
+        backtrack = np.zeros([length, num_states])
+
+        # Initialization.
+        viterbi[0,:] = emission_scores[0,:] + initial_scores
+
+        # Forward loop.
+        for pos in xrange(1,length):
+            for current_state in xrange(num_states):
+                # Note the fact that multiplication in log domain turns a sum and sum turns a logsum
+                viterbi[pos, current_state] = \
+                        np.max(viterbi[pos-1, :] + transition_scores[pos-1, current_state, :])
+                viterbi[pos, current_state] += emission_scores[pos, current_state]
+                backtrack[pos, current_state] = \
+                        np.argmax(viterbi[pos-1, :] + transition_scores[pos-1, current_state, :])
+
+
+        # Termination.
+        best_states = np.zeros([length], dtype=np.int)
+        best_states[-1] = np.argmax(viterbi[length-1,:] + final_scores)
+        log_likelihood = np.max(viterbi[length-1,:] + final_scores)
+        for i in xrange(length-2, -1, -1):
+            best_states[i] = backtrack[i+1, best_states[i+1]]
+
+        return best_states, log_likelihood
 
     def run_forward_backward(self, initial_scores, transition_scores, final_scores, emission_scores):
         log_likelihood, forward = self.run_forward(initial_scores, transition_scores, final_scores, emission_scores)

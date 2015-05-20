@@ -41,7 +41,43 @@ class StructuredPerceptron(dsc.DiscriminativeSequenceClassifier):
 
     def perceptron_update(self, sequence):
         ## Exercise 3.3
-        pass
+        y_hat = self.viterbi_decode(sequence)[0].y
+        y_true = sequence.y
+        num_labels = len(sequence.y)
+        num_mistakes = sum([int(res) for res in np.array(y_true, dtype=np.int) != np.array(y_hat, dtype=np.int)])
+        
+        # Update initial features
+        true_initial_features = self.feature_mapper.get_initial_features(sequence, y_true[0])
+        pred_initial_features = self.feature_mapper.get_initial_features(sequence, y_hat[0])
+        self.parameters[true_initial_features] += 1
+        self.parameters[pred_initial_features] -= 1
+
+        # Update emission features
+        for pos in xrange(len(sequence.x)):
+            y_t_true = y_true[pos]
+            true_emission_features = self.feature_mapper.get_emission_features(sequence, pos, y_t_true)
+            self.parameters[true_emission_features] += 1
+            y_t_hat = y_hat[pos]
+            pred_emission_features = self.feature_mapper.get_emission_features(sequence, pos, y_t_hat)
+            self.parameters[pred_emission_features] -= 1
+
+            # Update transition features.
+            if pos > 0:
+                prev_y_t_true = y_true[pos-1]
+                true_transition_features = self.feature_mapper.get_transition_features(sequence, pos-1, y_t_true, prev_y_t_true)
+                self.parameters[true_transition_features] += 1
+                prev_y_t_hat = y_hat[pos-1]
+                pred_transition_features = self.feature_mapper.get_transition_features(sequence, pos-1, y_t_hat, prev_y_t_hat)
+                self.parameters[pred_transition_features] -= 1
+
+        # Update final features
+        true_initial_features = self.feature_mapper.get_initial_features(sequence, y_true[-1])
+        pred_initial_features = self.feature_mapper.get_initial_features(sequence, y_hat[-1])
+        self.parameters[true_initial_features] += 1
+        self.parameters[pred_initial_features] -= 1
+
+        return num_labels, num_mistakes
+
 
     def save_model(self,dir):
         fn = open(dir+"parameters.txt",'w')

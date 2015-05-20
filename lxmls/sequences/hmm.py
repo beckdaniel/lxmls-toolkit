@@ -138,7 +138,11 @@ class HMM(sc.SequenceClassifier):
     def update_counts(self, sequence, state_posteriors, transition_posteriors):
         ''' Used in the E-step in EM.'''
         ## Exercise 2.10
-        pass
+        self.initial_counts += state_posteriors[0]
+        self.transition_counts += np.sum(transition_posteriors, axis=0)
+        self.final_counts += state_posteriors[-1]
+        for i, x in enumerate(sequence.x):
+            self.emission_counts[x] += state_posteriors[i]
 
     def compute_parameters(self):
         ''' Estimate the HMM parameters by normalizing the counts.'''
