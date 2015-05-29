@@ -49,20 +49,18 @@ labs_URL   = 'https://github.com/gracaninja/lxmls-toolkit/raw/student/'
 code_day = {
     'day1': ['lxmls/classifiers/multinomial_naive_bayes.py', 
              'lxmls/classifiers/perceptron.py'], 
-    'day2': ['lxmls/sequences/hmm.py',
-             'lxmls/sequences/sequence_classification_decoder.py',
-             'lxmls/sequences/structured_perceptron.py'],
+    'viterbi': ['lxmls/sequences/sequence_classification_decoder.py'],
     'day3': ['lxmls/parsing/dependency_decoder.py']
            }
 
 # ARGUMENT PROCESSING
 if ((len(sys.argv) == 2) and 
-    (sys.argv[1] in ['day0', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6'])): 
+    (sys.argv[1] in ['day0', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'viterbi'])): 
     undo_flag = 0
     day       = sys.argv[1]
 elif ((len(sys.argv) == 3) and 
       (sys.argv[1] == '--undo') and
-      (sys.argv[2] in ['day0', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6'])): 
+      (sys.argv[2] in ['day0', 'day1', 'day2', 'day3', 'day4', 'day5', 'day6', 'viterbi'])): 
     undo_flag = 1
     day       = sys.argv[2]
 
@@ -77,7 +75,10 @@ else:
 
 # CHECK THERE ARE FILES TO SAVE
 if day in code_day:
-    print "\nsolving %s" % day 
+    if undo_flag:
+        print "\nUnsolving %s" % day 
+    else:
+        print "\nSolving %s" % day 
 else:
     print "\nTheres actually no code to solve on %s!\n" % day
     exit()
@@ -86,6 +87,9 @@ else:
 for pyfile in code_day[day]:
     if undo_flag:
         download_and_replace(labs_URL + pyfile, pyfile)
+        print "Unsolving: %s" % pyfile
     else:
         download_and_replace(master_URL + pyfile, pyfile)
-    print "Solving: %s" % pyfile
+        print "Solving: %s" % pyfile
+
+
